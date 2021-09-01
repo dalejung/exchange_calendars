@@ -143,8 +143,8 @@ class ExchangeCalendar(ABC):
 
     Many calendars do not have bounds defined (in these cases `bound_start`
     and/or `bound_end` return None). These calendars can be created through
-    any date range although it should be noted that the further back the
-    start date, the greater the potential for inaccuracies.
+    any date range although it should be noted that the earlier the start
+    date, the greater the potential for inaccuracies.
 
     In all cases, no guarantees are offered as to the accuracy of any
     calendar.
