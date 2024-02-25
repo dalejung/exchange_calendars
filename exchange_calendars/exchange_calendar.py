@@ -358,8 +358,8 @@ class ExchangeCalendar(ABC):
         _special_closes = self._calculate_special_closes(start, end)
 
         # Overwrite the special opens and closes on top of the standard ones.
-        _overwrite_special_dates(_all_days, self._opens, _special_opens)
-        _overwrite_special_dates(_all_days, self._closes, _special_closes)
+        self._opens = _overwrite_special_dates(_all_days, self._opens, _special_opens)
+        self._closes = _overwrite_special_dates(_all_days, self._closes, _special_closes)
         _remove_breaks_for_special_dates(_all_days, self._break_starts, _special_closes)
         _remove_breaks_for_special_dates(_all_days, self._break_ends, _special_closes)
 
@@ -2873,14 +2873,14 @@ def _overwrite_special_dates(
     session_labels: pd.DatetimeIndex,
     standard_times: pd.DatetimeIndex,
     special_times: pd.Series,
-) -> None:
+) -> pd.DatetimeIndex:
     """Overwrite standard times of a session bound with special times.
 
     `session_labels` required for alignment.
     """
     # Short circuit when nothing to apply.
     if special_times.empty:
-        return
+        return standard_times
 
     len_m, len_oc = len(session_labels), len(standard_times)
     if len_m != len_oc:
@@ -2904,7 +2904,10 @@ def _overwrite_special_dates(
     # internal data of an Index, which is conceptually immutable.  Since we're
     # maintaining sorting, this should be ok, but this is a good place to
     # sanity check if things start going haywire with calendar computations.
-    standard_times.values[indexer] = special_times.values
+    new_times = pd.Series(standard_times)
+    new_times.iloc[indexer] = special_times
+    new_index = pd.DatetimeIndex(new_times, dtype=standard_times.dtype)
+    return new_index
 
 
 def _remove_breaks_for_special_dates(
